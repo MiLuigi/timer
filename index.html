@@ -1,0 +1,475 @@
+
+<!DOCTYPE html>
+<div id="app" style="max-width:420px;margin:0 auto;font-family:var(--font-sans);padding:0 0 2rem;">
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--accent:#534AB7;--accent-light:#EEEDFE;--accent-text:#3C3489;--danger:#E24B4A;--success:#1D9E75;--warn:#BA7517}
+.screen{display:none}.screen.active{display:block}
+.topbar{display:flex;align-items:center;gap:8px;padding:12px 16px;border-bottom:0.5px solid var(--color-border-tertiary);position:sticky;top:0;background:var(--color-background-primary);z-index:10}
+.topbar h1{font-size:16px;font-weight:500;flex:1}
+.btn-icon{background:none;border:none;cursor:pointer;padding:6px;border-radius:8px;color:var(--color-text-secondary);font-size:20px;display:flex;align-items:center}
+.btn-icon:hover{background:var(--color-background-secondary)}
+.btn{border:0.5px solid var(--color-border-secondary);background:transparent;border-radius:8px;padding:8px 16px;font-size:14px;cursor:pointer;color:var(--color-text-primary);font-family:var(--font-sans)}
+.btn:hover{background:var(--color-background-secondary)}
+.btn.primary{background:var(--accent);color:#fff;border-color:var(--accent)}
+.btn.primary:hover{background:var(--accent-text)}
+.btn.danger{background:var(--danger);color:#fff;border-color:var(--danger)}
+.section{padding:16px}
+.card{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:12px;padding:14px;margin-bottom:10px}
+.step-row{display:flex;align-items:center;gap:8px;background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:10px;padding:10px 12px;margin-bottom:8px}
+.step-num{width:24px;height:24px;border-radius:50%;background:var(--accent-light);color:var(--accent-text);font-size:12px;font-weight:500;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.step-label{flex:1;font-size:14px;color:var(--color-text-primary)}
+.step-dur{font-size:13px;color:var(--color-text-secondary);margin-right:4px}
+input[type=text],input[type=number]{border:0.5px solid var(--color-border-secondary);border-radius:8px;padding:8px 12px;font-size:14px;background:var(--color-background-primary);color:var(--color-text-primary);font-family:var(--font-sans);width:100%}
+input[type=text]:focus,input[type=number]:focus{outline:none;border-color:var(--accent)}
+.label{font-size:12px;color:var(--color-text-secondary);margin-bottom:4px}
+.row{display:flex;gap:8px;align-items:center}
+.timer-display{text-align:center;padding:32px 16px}
+.timer-big{font-size:72px;font-weight:500;letter-spacing:-2px;color:var(--color-text-primary);font-variant-numeric:tabular-nums}
+.timer-step-name{font-size:16px;color:var(--color-text-secondary);margin-top:4px}
+.timer-progress{width:100%;height:6px;background:var(--color-background-secondary);border-radius:3px;margin:20px 0;overflow:hidden}
+.timer-bar{height:100%;border-radius:3px;background:var(--accent);transition:width 0.9s linear}
+.timer-controls{display:flex;gap:12px;justify-content:center;margin-top:8px}
+.btn-round{width:60px;height:60px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:24px;cursor:pointer;border:none}
+.btn-round.play{background:var(--accent);color:#fff}
+.btn-round.stop{background:var(--danger);color:#fff}
+.btn-round.skip{background:var(--color-background-secondary);color:var(--color-text-primary);width:48px;height:48px;font-size:20px}
+.step-queue{padding:0 16px}
+.q-item{display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:8px;margin-bottom:6px;opacity:0.5;font-size:14px}
+.q-item.active{opacity:1;background:var(--accent-light);color:var(--accent-text)}
+.q-item.done{opacity:0.3;text-decoration:line-through}
+.q-dot{width:8px;height:8px;border-radius:50%;background:var(--color-border-primary);flex-shrink:0}
+.q-item.active .q-dot{background:var(--accent)}
+.profile-card{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:12px;padding:14px 16px;margin-bottom:10px;cursor:pointer}
+.profile-card:hover{border-color:var(--accent)}
+.profile-name{font-size:15px;font-weight:500}
+.profile-meta{font-size:12px;color:var(--color-text-secondary);margin-top:3px}
+.total-badge{display:inline-block;background:var(--accent-light);color:var(--accent-text);border-radius:6px;padding:2px 8px;font-size:12px;font-weight:500}
+.empty{text-align:center;color:var(--color-text-secondary);font-size:14px;padding:40px 20px}
+.nav{display:flex;border-top:0.5px solid var(--color-border-tertiary);position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:420px;background:var(--color-background-primary);z-index:20}
+.nav-btn{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:10px 8px;font-size:10px;color:var(--color-text-secondary);cursor:pointer;border:none;background:none;font-family:var(--font-sans)}
+.nav-btn i{font-size:22px}
+.nav-btn.active{color:var(--accent)}
+.finish-banner{background:#EAF3DE;border:0.5px solid #97C459;border-radius:12px;padding:16px;text-align:center;margin:16px}
+.finish-banner p{color:#3B6D11;font-size:15px;font-weight:500}
+.finish-banner small{color:#639922;font-size:13px}
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:100;align-items:flex-end;justify-content:center}
+.modal-bg.open{display:flex}
+.modal{background:var(--color-background-primary);border-radius:16px 16px 0 0;padding:20px;width:100%;max-width:420px}
+.modal h2{font-size:16px;font-weight:500;margin-bottom:16px}
+</style>
+
+<!-- SCREEN: EDITOR -->
+<div class="screen active" id="screen-editor">
+  <div class="topbar">
+    <h1 id="seq-title-display">Nouvelle séquence</h1>
+    <button class="btn-icon" onclick="openRenameModal()" title="Renommer"><i class="ti ti-pencil" aria-hidden="true"></i></button>
+  </div>
+  <div class="section">
+    <div id="steps-list"></div>
+    <button class="btn" style="width:100%;margin-top:4px" onclick="addStep()"><i class="ti ti-plus" aria-hidden="true"></i> Ajouter un minuteur</button>
+  </div>
+  <div class="section" style="padding-top:0">
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+        <span style="font-size:14px;font-weight:500">Total</span>
+        <span class="total-badge" id="total-display">0s</span>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button class="btn primary" style="flex:1" onclick="startSequence()"><i class="ti ti-player-play" aria-hidden="true"></i> Lancer</button>
+        <button class="btn" onclick="openSaveModal()"><i class="ti ti-device-floppy" aria-hidden="true"></i> Sauvegarder</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SCREEN: TIMER -->
+<div class="screen" id="screen-timer">
+  <div class="topbar">
+    <button class="btn-icon" onclick="stopAll()"><i class="ti ti-arrow-left" aria-hidden="true"></i></button>
+    <h1 id="timer-seq-name">Séquence</h1>
+  </div>
+  <div class="timer-display">
+    <div class="timer-big" id="timer-display">00:21</div>
+    <div class="timer-step-name" id="timer-step-name">Étape 1</div>
+    <div class="timer-progress"><div class="timer-bar" id="timer-bar" style="width:100%"></div></div>
+    <div style="font-size:13px;color:var(--color-text-secondary)" id="timer-remaining-steps"></div>
+  </div>
+  <div class="timer-controls">
+    <button class="btn-round skip" onclick="skipStep()" title="Passer"><i class="ti ti-player-skip-forward" aria-hidden="true"></i></button>
+    <button class="btn-round play" id="btn-playpause" onclick="togglePause()"><i class="ti ti-player-pause" aria-hidden="true"></i></button>
+    <button class="btn-round stop" onclick="stopAll()" title="Arrêter"><i class="ti ti-square" aria-hidden="true"></i></button>
+  </div>
+  <div class="step-queue" id="step-queue" style="margin-top:20px"></div>
+  <div id="finish-area"></div>
+</div>
+
+<!-- SCREEN: PROFILES -->
+<div class="screen" id="screen-profiles">
+  <div class="topbar">
+    <h1>Profils sauvegardés</h1>
+  </div>
+  <div class="section" id="profiles-list"></div>
+</div>
+
+<!-- NAV -->
+<div class="nav">
+  <button class="nav-btn active" id="nav-editor" onclick="showScreen('editor')">
+    <i class="ti ti-layout-list" aria-hidden="true"></i>Séquence
+  </button>
+  <button class="nav-btn" id="nav-profiles" onclick="showScreen('profiles')">
+    <i class="ti ti-bookmark" aria-hidden="true"></i>Profils
+  </button>
+</div>
+
+<!-- MODAL: ADD/EDIT STEP -->
+<div class="modal-bg" id="modal-step">
+  <div class="modal">
+    <h2 id="modal-step-title">Ajouter un minuteur</h2>
+    <div class="label">Nom (optionnel)</div>
+    <input type="text" id="step-name-input" placeholder="ex: Pose, Repos, Cycle..." style="margin-bottom:12px">
+    <div class="label">Durée</div>
+    <div class="row" style="margin-bottom:16px">
+      <div style="flex:1"><div class="label">min</div><input type="number" id="step-min" value="0" min="0" max="99"></div>
+      <div style="flex:1"><div class="label">sec</div><input type="number" id="step-sec" value="21" min="0" max="59"></div>
+    </div>
+    <div class="row">
+      <button class="btn" style="flex:1" onclick="closeModal('modal-step')">Annuler</button>
+      <button class="btn primary" style="flex:1" onclick="saveStep()">Valider</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: SAVE PROFILE -->
+<div class="modal-bg" id="modal-save">
+  <div class="modal">
+    <h2>Sauvegarder le profil</h2>
+    <div class="label">Nom du profil</div>
+    <input type="text" id="profile-name-input" placeholder="ex: Mon entraînement, Recette..." style="margin-bottom:16px">
+    <div class="row">
+      <button class="btn" style="flex:1" onclick="closeModal('modal-save')">Annuler</button>
+      <button class="btn primary" style="flex:1" onclick="saveProfile()">Sauvegarder</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: RENAME -->
+<div class="modal-bg" id="modal-rename">
+  <div class="modal">
+    <h2>Renommer la séquence</h2>
+    <input type="text" id="rename-input" style="margin-bottom:16px">
+    <div class="row">
+      <button class="btn" style="flex:1" onclick="closeModal('modal-rename')">Annuler</button>
+      <button class="btn primary" style="flex:1" onclick="applyRename()">OK</button>
+    </div>
+  </div>
+</div>
+
+<script>
+let steps = [];
+let editingStepIdx = null;
+let seqName = "Nouvelle séquence";
+
+let timerInterval = null;
+let currentStepIdx = 0;
+let timeLeft = 0;
+let stepTotal = 0;
+let paused = false;
+let timerSteps = [];
+
+let profiles = [];
+
+function loadData(){
+  try{
+    const s = localStorage.getItem('seq_steps');
+    if(s) steps = JSON.parse(s);
+    const n = localStorage.getItem('seq_name');
+    if(n) seqName = n;
+    const p = localStorage.getItem('seq_profiles');
+    if(p) profiles = JSON.parse(p);
+  }catch(e){}
+  renderSteps();
+  updateTotal();
+  document.getElementById('seq-title-display').textContent = seqName;
+}
+
+function saveData(){
+  try{
+    localStorage.setItem('seq_steps', JSON.stringify(steps));
+    localStorage.setItem('seq_name', seqName);
+  }catch(e){}
+}
+
+function saveProfilesData(){
+  try{ localStorage.setItem('seq_profiles', JSON.stringify(profiles)); }catch(e){}
+}
+
+function showScreen(name){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('screen-'+name).classList.add('active');
+  document.getElementById('nav-'+name)?.classList.add('active');
+  if(name==='profiles') renderProfiles();
+}
+
+function openModal(id){ document.getElementById(id).classList.add('open'); }
+function closeModal(id){ document.getElementById(id).classList.remove('open'); }
+
+function addStep(){
+  editingStepIdx = null;
+  document.getElementById('modal-step-title').textContent = 'Ajouter un minuteur';
+  document.getElementById('step-name-input').value = '';
+  document.getElementById('step-min').value = 0;
+  document.getElementById('step-sec').value = 21;
+  openModal('modal-step');
+}
+
+function editStep(idx){
+  editingStepIdx = idx;
+  const s = steps[idx];
+  document.getElementById('modal-step-title').textContent = 'Modifier le minuteur';
+  document.getElementById('step-name-input').value = s.name||'';
+  document.getElementById('step-min').value = Math.floor(s.dur/60);
+  document.getElementById('step-sec').value = s.dur%60;
+  openModal('modal-step');
+}
+
+function saveStep(){
+  const name = document.getElementById('step-name-input').value.trim();
+  const min = parseInt(document.getElementById('step-min').value)||0;
+  const sec = parseInt(document.getElementById('step-sec').value)||0;
+  const dur = min*60+sec;
+  if(dur<=0){ alert('Durée invalide'); return; }
+  const step = {name: name||`Étape ${steps.length+1}`, dur};
+  if(editingStepIdx===null) steps.push(step);
+  else steps[editingStepIdx] = step;
+  closeModal('modal-step');
+  renderSteps();
+  updateTotal();
+  saveData();
+}
+
+function deleteStep(idx){
+  steps.splice(idx,1);
+  renderSteps();
+  updateTotal();
+  saveData();
+}
+
+function moveStep(idx, dir){
+  const to = idx+dir;
+  if(to<0||to>=steps.length) return;
+  [steps[idx],steps[to]]=[steps[to],steps[idx]];
+  renderSteps();
+  saveData();
+}
+
+function renderSteps(){
+  const el = document.getElementById('steps-list');
+  if(!steps.length){
+    el.innerHTML = '<div class="empty"><i class="ti ti-clock" style="font-size:32px;display:block;margin-bottom:8px" aria-hidden="true"></i>Aucun minuteur.<br>Appuyez sur + pour commencer.</div>';
+    return;
+  }
+  el.innerHTML = steps.map((s,i)=>`
+    <div class="step-row">
+      <div class="step-num">${i+1}</div>
+      <div class="step-label">${esc(s.name)}</div>
+      <span class="step-dur">${fmtDur(s.dur)}</span>
+      <button class="btn-icon" onclick="moveStep(${i},-1)" title="Monter" ${i===0?'style="opacity:0.3"':''}><i class="ti ti-chevron-up" aria-hidden="true"></i></button>
+      <button class="btn-icon" onclick="moveStep(${i},1)" title="Descendre" ${i===steps.length-1?'style="opacity:0.3"':''}><i class="ti ti-chevron-down" aria-hidden="true"></i></button>
+      <button class="btn-icon" onclick="editStep(${i})" title="Modifier"><i class="ti ti-pencil" aria-hidden="true"></i></button>
+      <button class="btn-icon" onclick="deleteStep(${i})" title="Supprimer"><i class="ti ti-trash" aria-hidden="true"></i></button>
+    </div>
+  `).join('');
+}
+
+function updateTotal(){
+  const total = steps.reduce((a,s)=>a+s.dur,0);
+  document.getElementById('total-display').textContent = fmtDur(total);
+}
+
+function fmtDur(s){
+  if(s<60) return s+'s';
+  return Math.floor(s/60)+'m '+(s%60>0?(s%60)+'s':'');
+}
+
+function fmtTime(s){
+  const m = Math.floor(s/60);
+  const sc = s%60;
+  return `${String(m).padStart(2,'0')}:${String(sc).padStart(2,'0')}`;
+}
+
+function esc(str){ return str.replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+function openRenameModal(){
+  document.getElementById('rename-input').value = seqName;
+  openModal('modal-rename');
+}
+function applyRename(){
+  const v = document.getElementById('rename-input').value.trim();
+  if(v){ seqName = v; document.getElementById('seq-title-display').textContent = v; saveData(); }
+  closeModal('modal-rename');
+}
+
+function openSaveModal(){
+  if(!steps.length){ alert('Ajoutez au moins un minuteur.'); return; }
+  document.getElementById('profile-name-input').value = seqName;
+  openModal('modal-save');
+}
+function saveProfile(){
+  const name = document.getElementById('profile-name-input').value.trim()||seqName;
+  profiles.unshift({name, steps:JSON.parse(JSON.stringify(steps)), saved:Date.now()});
+  saveProfilesData();
+  closeModal('modal-save');
+  alert('Profil "'+name+'" sauvegardé !');
+}
+
+function renderProfiles(){
+  const el = document.getElementById('profiles-list');
+  if(!profiles.length){
+    el.innerHTML = '<div class="empty"><i class="ti ti-bookmark" style="font-size:32px;display:block;margin-bottom:8px" aria-hidden="true"></i>Aucun profil sauvegardé.</div>';
+    return;
+  }
+  el.innerHTML = profiles.map((p,i)=>`
+    <div class="profile-card" onclick="loadProfile(${i})">
+      <div style="display:flex;align-items:center;justify-content:space-between">
+        <div>
+          <div class="profile-name">${esc(p.name)}</div>
+          <div class="profile-meta">${p.steps.length} minuteur(s) · <span class="total-badge">${fmtDur(p.steps.reduce((a,s)=>a+s.dur,0))}</span></div>
+        </div>
+        <button class="btn-icon" onclick="event.stopPropagation();deleteProfile(${i})" title="Supprimer"><i class="ti ti-trash" aria-hidden="true"></i></button>
+      </div>
+      <div style="margin-top:8px;font-size:12px;color:var(--color-text-secondary)">${p.steps.map(s=>s.name+' ('+fmtDur(s.dur)+')').join(' → ')}</div>
+    </div>
+  `).join('');
+}
+
+function loadProfile(i){
+  const p = profiles[i];
+  steps = JSON.parse(JSON.stringify(p.steps));
+  seqName = p.name;
+  document.getElementById('seq-title-display').textContent = seqName;
+  renderSteps();
+  updateTotal();
+  saveData();
+  showScreen('editor');
+}
+function deleteProfile(i){
+  if(!confirm('Supprimer ce profil ?')) return;
+  profiles.splice(i,1);
+  saveProfilesData();
+  renderProfiles();
+}
+
+function startSequence(){
+  if(!steps.length){ alert('Ajoutez au moins un minuteur.'); return; }
+  timerSteps = JSON.parse(JSON.stringify(steps));
+  currentStepIdx = 0;
+  paused = false;
+  document.getElementById('timer-seq-name').textContent = seqName;
+  document.getElementById('finish-area').innerHTML = '';
+  showTimerScreen();
+  startStep(0);
+}
+
+function showTimerScreen(){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('screen-timer').classList.add('active');
+}
+
+function startStep(idx){
+  if(timerInterval) clearInterval(timerInterval);
+  if(idx>=timerSteps.length){ onFinish(); return; }
+  currentStepIdx = idx;
+  const step = timerSteps[idx];
+  stepTotal = step.dur;
+  timeLeft = step.dur;
+  paused = false;
+  document.getElementById('timer-step-name').textContent = step.name;
+  document.getElementById('btn-playpause').innerHTML = '<i class="ti ti-player-pause" aria-hidden="true"></i>';
+  updateTimerDisplay();
+  renderQueue();
+  timerInterval = setInterval(tick, 1000);
+}
+
+function tick(){
+  if(paused) return;
+  timeLeft--;
+  updateTimerDisplay();
+  if(timeLeft<=0){
+    clearInterval(timerInterval);
+    buzz();
+    setTimeout(()=>startStep(currentStepIdx+1), 600);
+  }
+}
+
+function updateTimerDisplay(){
+  document.getElementById('timer-display').textContent = fmtTime(timeLeft);
+  const pct = stepTotal>0 ? (timeLeft/stepTotal)*100 : 0;
+  document.getElementById('timer-bar').style.width = pct+'%';
+  const rem = timerSteps.length - currentStepIdx - 1;
+  document.getElementById('timer-remaining-steps').textContent = rem>0 ? rem+' minuteur(s) suivant(s)' : 'Dernier minuteur';
+}
+
+function renderQueue(){
+  const el = document.getElementById('step-queue');
+  el.innerHTML = timerSteps.map((s,i)=>{
+    let cls = '';
+    if(i===currentStepIdx) cls='active';
+    else if(i<currentStepIdx) cls='done';
+    return `<div class="q-item ${cls}"><div class="q-dot"></div><span>${esc(s.name)}</span><span style="margin-left:auto;font-size:12px">${fmtDur(s.dur)}</span></div>`;
+  }).join('');
+}
+
+function togglePause(){
+  paused = !paused;
+  const btn = document.getElementById('btn-playpause');
+  btn.innerHTML = paused ? '<i class="ti ti-player-play" aria-hidden="true"></i>' : '<i class="ti ti-player-pause" aria-hidden="true"></i>';
+}
+
+function skipStep(){
+  clearInterval(timerInterval);
+  startStep(currentStepIdx+1);
+}
+
+function stopAll(){
+  clearInterval(timerInterval);
+  timerInterval = null;
+  showScreen('editor');
+}
+
+function onFinish(){
+  clearInterval(timerInterval);
+  document.getElementById('timer-display').textContent = '00:00';
+  document.getElementById('timer-step-name').textContent = 'Terminé !';
+  document.getElementById('timer-bar').style.width = '0%';
+  document.getElementById('finish-area').innerHTML = `
+    <div class="finish-banner">
+      <p>✓ Séquence terminée !</p>
+      <small>Total : ${fmtDur(timerSteps.reduce((a,s)=>a+s.dur,0))}</small>
+      <br><br>
+      <button class="btn primary" onclick="startSequence()">Relancer</button>
+      <button class="btn" onclick="stopAll()" style="margin-left:8px">Retour</button>
+    </div>`;
+  buzz();
+}
+
+function buzz(){
+  try{
+    const ctx = new (window.AudioContext||window.webkitAudioContext)();
+    const o = ctx.createOscillator();
+    const g = ctx.createGain();
+    o.connect(g); g.connect(ctx.destination);
+    o.frequency.value = 880;
+    g.gain.setValueAtTime(0.3, ctx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime+0.4);
+    o.start(ctx.currentTime);
+    o.stop(ctx.currentTime+0.4);
+  }catch(e){}
+}
+
+loadData();
+</script>
+</div>
